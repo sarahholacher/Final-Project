@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic Tac Toe - First to 5</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 50px;
+      background: #f0f0f0;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #score {
+      margin-bottom: 20px;
+      font-size: 1.2em;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 5px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      cursor: pointer;
+      border: 2px solid #333;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 1.1em;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tic Tac Toe</h1>
+  <div id="score">Player: 0 | Computer: 0</div>
+  <div id="board"></div>
+  <div id="message"></div>
+  <button onclick="resetGame(true)">Reset Game</button>
+
+  <script>
+    const board = document.getElementById('board');
+    const message = document.getElementById('message');
+    const scoreDisplay = document.getElementById('score');
+    let cells = [];
+    let playerScore = 0;
+    let computerScore = 0;
+    let gameOver = false;
+
+    function createBoard() {
+      board.innerHTML = '';
+      cells = [];
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.dataset.index = i;
+        cell.addEventListener('click', handlePlayerMove);
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+      gameOver = false;
+      message.textContent = '';
+    }
+
+    function handlePlayerMove(e) {
+      const cell = e.target;
+      if (cell.textContent || gameOver) return;
+      cell.textContent = 'X';
+      if (checkWinner('X')) {
+        playerScore++;
+        updateScore();
+        message.textContent = 'You win this round!';
+        checkGameEnd();
+        gameOver = true;
+        return;
+      }
+      if (isDraw()) {
+        message.textContent = 'It\'s a draw!';
+        gameOver = true;
+        return;
+      }
+      setTimeout(computerMove, 300);
+    }
+
+    function computerMove() {
+      const emptyCells = cells.filter(cell => cell.textContent === '');
+      if (emptyCells.length === 0 || gameOver) return;
+      const choice = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      choice.textContent = 'O';
+      if (checkWinner('O')) {
+        computerScore++;
+        updateScore();
+        message.textContent = 'Computer wins this round!';
+        checkGameEnd();
+        gameOver = true;
+      } else if (isDraw()) {
+        message.textContent = 'It\'s a draw!';
+        gameOver = true;
+      }
+    }
+
+    function checkWinner(mark) {
+      const wins = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+      return wins.some(combo => {
+        return combo.every(index => cells[index].textContent === mark);
+      });
+    }
+
+    function isDraw() {
+      return cells.every(cell => cell.textContent);
+    }
+
+    function updateScore() {
+      scoreDisplay.textContent = `Player: ${playerScore} | Computer: ${computerScore}`;
+    }
+
+    function checkGameEnd() {
+      if (playerScore === 5 || computerScore === 5) {
+        message.textContent += playerScore === 5 ? ' You win the game!' : ' Computer wins the game!';
+        disableBoard();
+      }
+    }
+
+    function disableBoard() {
+      cells.forEach(cell => cell.removeEventListener('click', handlePlayerMove));
+    }
+
+    function resetGame(full = false) {
+      if (full) {
+        playerScore = 0;
+        computerScore = 0;
+        updateScore();
+      }
+      createBoard();
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>
